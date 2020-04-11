@@ -21,14 +21,17 @@ type Config struct {
 	PrivateKey    PrivateKey `json:"private_key" yaml:"private_key"`
 	AppID         int64      `config:"app_id" json:"app_id" yaml:"app_id"`
 	ManifestRepo  string     `config:"manifest_repo" json:"manifest_repo" yaml:"manifest_repo"`
+	Port          int        `config:"port" json:"port" yaml:"port"`
 }
 
 // ReadConfig reads config from env, json and yaml
 func ReadConfig() (*Config, error) {
 	loader := confita.NewLoader(
 		env.NewBackend(),
-		file.NewBackend("./mischan.json"),
-		file.NewBackend("./mischan.yaml"),
+		file.NewOptionalBackend("./mischan.json"),
+		file.NewOptionalBackend("./mischan.yaml"),
+		file.NewOptionalBackend("/etc/mischan/mischan.json"),
+		file.NewOptionalBackend("/etc/mischan/mischan.yaml"),
 	)
 
 	cfg := &Config{}

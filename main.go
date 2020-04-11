@@ -1,8 +1,8 @@
 package main
 
 import (
+	"fmt"
 	"log"
-	"os"
 
 	"github.com/MISW/mischan-bot/config"
 	"github.com/MISW/mischan-bot/handler"
@@ -63,7 +63,7 @@ func main() {
 
 		handler.BindHandler(e, cfg, ghu)
 
-		if err := e.Start(":" + os.Getenv("PORT")); err != nil {
+		if err := e.Start(fmt.Sprintf(":%d", cfg.Port)); err != nil {
 			return xerrors.Errorf("failed to start handler: %w", err)
 		}
 
