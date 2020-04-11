@@ -19,3 +19,14 @@ jobs:
           dockerfile: Dockerfile
           tag_with_ref: true
           tag_with_sha: true
+
+      - name: Build Docker Image　(for internal registry)
+        uses: docker/build-push-action@v1
+        with:
+          username: admin
+          password: ${{ secrets.DOCKER_PASSWORD }}
+          repository: mischan-bot/mischan-bot
+          registry: registry.misw.jp
+          dockerfile: Dockerfile
+          tag_with_ref: true
+          tag_with_sha: true
