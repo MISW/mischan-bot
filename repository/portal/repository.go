@@ -144,7 +144,7 @@ func (pr *portalRepository) OnStatus(event *github.StatusEvent) error {
 		return xerrors.Errorf("failed to close obsolete PRs: %w", err)
 	}
 
-	shortSHA := appLatestSHA[:8]
+	shortSHA := appLatestSHA[:7]
 
 	if err := manimani.CreatePullRequest(
 		ctx,
