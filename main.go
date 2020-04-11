@@ -8,6 +8,7 @@ import (
 	"github.com/MISW/mischan-bot/handler"
 	"github.com/MISW/mischan-bot/intenral/ghsink"
 	"github.com/MISW/mischan-bot/repository"
+	"github.com/MISW/mischan-bot/repository/mischanbot"
 	"github.com/MISW/mischan-bot/repository/portal"
 	"github.com/MISW/mischan-bot/usecase"
 	"github.com/labstack/echo/v4"
@@ -56,6 +57,9 @@ func main() {
 	// Register app repositories
 	must(container.Invoke(func(repoBundler *repository.RepositoryBundler, cfg *config.Config, ghs *ghsink.GitHubSink) {
 		repoBundler.RegisterRepository(portal.NewPortalRepository(cfg, ghs))
+	}))
+	must(container.Invoke(func(repoBundler *repository.RepositoryBundler, cfg *config.Config, ghs *ghsink.GitHubSink) {
+		repoBundler.RegisterRepository(mischanbot.NewMischanBotRepository(cfg, ghs))
 	}))
 
 	must(container.Invoke(func(e *echo.Echo, cfg *config.Config, ghu usecase.GitHubEventUsecase) error {
