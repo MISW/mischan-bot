@@ -90,7 +90,7 @@ func (pr *portalRepository) getLatestSHA(ctx context.Context, event *github.Stat
 func (pr *portalRepository) kustomize(shortSHA string) func(ctx context.Context, dir string) error {
 	return func(ctx context.Context, dir string) error {
 		cmd := exec.CommandContext(
-			ctx, "kustomize", "edit", "set", "image", "PORTAL_FRONTEND_IMAGE=registry.misw.jp/portal/frontend:sha-"+truncSHA,
+			ctx, "kustomize", "edit", "set", "image", "PORTAL_FRONTEND_IMAGE=registry.misw.jp/portal/frontend:sha-"+shortSHA,
 		)
 		cmd.Dir = filepath.Join(dir, "bases/portal")
 
@@ -101,7 +101,7 @@ func (pr *portalRepository) kustomize(shortSHA string) func(ctx context.Context,
 		}
 
 		cmd = exec.CommandContext(
-			ctx, "kustomize", "edit", "set", "image", "PORTAL_BACKEND_IMAGE=registry.misw.jp/portal/backend:sha-"+truncSHA,
+			ctx, "kustomize", "edit", "set", "image", "PORTAL_BACKEND_IMAGE=registry.misw.jp/portal/backend:sha-"+shortSHA,
 		)
 		cmd.Dir = filepath.Join(dir, "bases/portal")
 
