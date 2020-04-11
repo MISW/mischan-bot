@@ -59,6 +59,7 @@ func main() {
 	}))
 
 	must(container.Invoke(func(e *echo.Echo, cfg *config.Config, ghu usecase.GitHubEventUsecase) error {
+		e.Use(middleware.Recover())
 		e.Use(middleware.Logger())
 
 		handler.BindHandler(e, cfg, ghu)
