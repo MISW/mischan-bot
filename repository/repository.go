@@ -43,7 +43,7 @@ func (rb *RepositoryBundler) OnStatus(event *github.StatusEvent) error {
 	rb.lock.RLock()
 	defer rb.lock.RUnlock()
 
-	repo := event.GetRepo().GetName()
+	repo := event.GetRepo().GetFullName()
 
 	onStatus, ok := rb.repositories[repo]
 
