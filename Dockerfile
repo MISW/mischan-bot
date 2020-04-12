@@ -12,6 +12,11 @@ RUN cd /work && go build -o /mischan-bot
 
 FROM debian:10
 
+RUN DEBIAN_FRONTEND=noninteractive apt-get update && apt-get install -y --no-install-recommends \
+    ca-certificates && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+
 COPY --from=tools /go/bin/kustomize /bin
 COPY --from=builder /mischan-bot /bin
 
