@@ -21,76 +21,67 @@ const (
 
 func NewPortalRepository(cfg *config.Config, ghs *ghsink.GitHubSink) repository.Repository {
 	return &portalRepository{
-		config: cfg,
-		ghs:    ghs,
+		config:       cfg,
+		ghs:          ghs,
+		targetBranch: "master",
+
+		owner: "MISW",
+		repo:  "Portal",
 	}
 }
 
 type portalRepository struct {
 	config *config.Config
 	ghs    *ghsink.GitHubSink
+
+	targetBranch string
+	owner, repo  string
 }
 
 var _ repository.Repository = &portalRepository{}
 
 func (pr *portalRepository) FullName() string {
-	return "MISW/Portal"
+	return pr.owner + "/" + pr.repo
 }
 
-func (pr *portalRepository) getManifestaInstallationID(ctx context.Context, owner, repo string) (installationID int64, token string, err error) {
-	ins, _, err := pr.ghs.AppsClient().Apps.FindRepositoryInstallation(ctx, owner, repo)
+func (pr *portalRepository) checkSuiteStatus(
+	ctx context.Context,
+	installationID int64,
+) (success bool, sha string, err error) {
+	client := pr.ghs.InstallationClient(installationID)
+
+	checkSuites, _, err := client.Checks.ListCheckSuitesForRef(ctx, pr.owner, pr.repo, pr.targetBranch, nil)
 
 	if err != nil {
-		return 0, "", xerrors.Errorf("failed to get installation for manifest repository: %w", err)
+		return false, "", xerrors.Errorf("failed list check suites for %s/%s: %w", pr.owner, pr.repo, err)
 	}
 
-	token, err = pr.ghs.InstallationToken(ctx, ins.GetID())
-
-	if err != nil {
-		return 0, "", xerrors.Errorf("failed to get token for installation: %w", err)
+	if len(checkSuites.CheckSuites) == 0 {
+		return false, "", nil
 	}
 
-	return ins.GetID(), token, nil
-}
-
-func (pr *portalRepository) getLatestSHA(ctx context.Context, event *github.StatusEvent) (string, error) {
-	targetBranch := "master"
-
-	maybeCorrectBranch := false
-	for i := range event.Branches {
-		if event.Branches[i].GetName() == targetBranch {
-			maybeCorrectBranch = true
+	success = true
+	for _, suite := range checkSuites.CheckSuites {
+		if suite.GetStatus() != "completed" {
+			success = false
+			break
 		}
+
+		if suite.GetConclusion() != "success" {
+			success = false
+			break
+		}
+
+		sha = suite.GetHeadSHA()
 	}
 
-	if len(event.Branches) == 10 {
-		maybeCorrectBranch = true
-	}
-
-	if !maybeCorrectBranch {
-		return "", nil
-	}
-
-	client := pr.ghs.InstallationClient(event.GetInstallation().GetID())
-
-	master, _, err := client.Repositories.GetBranch(
-		ctx,
-		event.GetRepo().GetOwner().GetLogin(),
-		event.GetRepo().GetName(),
-		targetBranch,
-	)
-
-	if err != nil {
-		return "", xerrors.Errorf("failed to get branch %s: %w", targetBranch, err)
-	}
-
-	return master.GetCommit().GetSHA(), nil
+	return
 }
 
 func (pr *portalRepository) kustomize(shortSHA string) func(ctx context.Context, dir string) error {
 	return func(ctx context.Context, dir string) error {
 		cmd := exec.CommandContext(
-			ctx, "kustomize", "edit", "set", "image", "PORTAL_FRONTEND_IMAGE=registry.misw.jp/portal/frontend:sha-"+shortSHA,
+			ctx, "kustomize", "edit", "set", "image", "registry.misw.jp/portal/frontend:sha-"+shortSHA,
 		)
 		cmd.Dir = filepath.Join(dir, "bases/portal")
 
@@ -101,7 +92,7 @@ func (pr *portalRepository) kustomize(shortSHA string) func(ctx context.Context,
 		}
 
 		cmd = exec.CommandContext(
-			ctx, "kustomize", "edit", "set", "image", "PORTAL_BACKEND_IMAGE=registry.misw.jp/portal/backend:sha-"+shortSHA,
+			ctx, "kustomize", "edit", "set", "image", "registry.misw.jp/portal/backend:sha-"+shortSHA,
 		)
 		cmd.Dir = filepath.Join(dir, "bases/portal")
 
@@ -115,22 +106,21 @@ func (pr *portalRepository) kustomize(shortSHA string) func(ctx context.Context,
 	}
 }
 
-func (pr *portalRepository) OnStatus(event *github.StatusEvent) error {
-	if event.GetState() != "success" {
-		return nil
-	}
-
+func (pr *portalRepository) run(installationID int64, expectedSHA string) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Minute)
 	defer cancel()
 
-	appLatestSHA, err := pr.getLatestSHA(ctx, event)
+	success, sha, err := pr.checkSuiteStatus(ctx, installationID)
 
 	if err != nil {
-		return xerrors.Errorf("failed to get latest sha for app repository: %w", err)
+		return xerrors.Errorf("failed to get latest check suite: %w", err)
 	}
 
-	if appLatestSHA != event.GetSHA() {
-		// Old commit
+	if !success {
+		return nil
+	}
+
+	if len(expectedSHA) != 0 && sha != expectedSHA {
 		return nil
 	}
 
@@ -144,20 +134,68 @@ func (pr *portalRepository) OnStatus(event *github.StatusEvent) error {
 		return xerrors.Errorf("failed to close obsolete PRs: %w", err)
 	}
 
-	shortSHA := appLatestSHA[:7]
+	shortSHA := sha[:7]
 
 	if err := manimani.CreatePullRequest(
 		ctx,
 		branchPrefix+shortSHA,
-		fmt.Sprintf("Update MISW/Portal to "),
+		fmt.Sprintf("Update MISW/portal to "),
 		pr.kustomize(shortSHA),
 	); err != nil {
 		return xerrors.Errorf("failed to create pull request: %w", err)
 	}
 
 	return nil
+
+}
+
+func (pr *portalRepository) OnCheckSuite(event *github.CheckSuiteEvent) error {
+	if event.GetCheckSuite().GetHeadBranch() != pr.targetBranch {
+		return nil
+	}
+
+	err := pr.run(
+		event.GetInstallation().GetID(),
+		event.GetCheckSuite().GetHeadSHA(),
+	)
+
+	if err != nil {
+		return xerrors.Errorf("check suite handler failed: %w", err)
+	}
+
+	return nil
+}
+
+func (pr *portalRepository) OnCreate(event *github.CreateEvent) error {
+	if event.GetRefType() != "branch" || event.GetRef() != pr.targetBranch {
+		return nil
+	}
+
+	err := pr.run(
+		event.GetInstallation().GetID(),
+		"",
+	)
+
+	if err != nil {
+		return xerrors.Errorf("check suite handler failed: %w", err)
+	}
+
+	return nil
 }
 
 func (pr *portalRepository) OnPush(event *github.PushEvent) error {
+	if event.GetRef() != "refs/heads/"+pr.targetBranch {
+		return nil
+	}
+
+	err := pr.run(
+		event.GetInstallation().GetID(),
+		"",
+	)
+
+	if err != nil {
+		return xerrors.Errorf("check suite handler failed: %w", err)
+	}
+
 	return nil
 }

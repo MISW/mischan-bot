@@ -85,7 +85,8 @@ func (mm *ManifestManipulator) CloseObsolatePRs(ctx context.Context, branchPrefi
 		mm.owner,
 		mm.repo,
 		&github.PullRequestListOptions{
-			Head: branchPrefix,
+			State: "open",
+			Head:  branchPrefix,
 		},
 	)
 

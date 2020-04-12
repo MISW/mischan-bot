@@ -40,15 +40,6 @@ func (rh *rootHandler) Webhook(c echo.Context) error {
 	}
 
 	switch c.Request().Header.Get("X-GitHub-Event") {
-	case "status":
-		event := &github.StatusEvent{}
-		if err := json.Unmarshal(payload, event); err != nil {
-			return c.JSON(http.StatusBadRequest, map[string]string{"message": "payload is invalid json", "error": err.Error()})
-		}
-
-		if err := rh.githubEventUsecase.Status(event); err != nil {
-			return err
-		}
 	case "push":
 		event := &github.PushEvent{}
 		if err := json.Unmarshal(payload, event); err != nil {
@@ -56,6 +47,24 @@ func (rh *rootHandler) Webhook(c echo.Context) error {
 		}
 
 		if err := rh.githubEventUsecase.Push(event); err != nil {
+			return err
+		}
+	case "check_suite":
+		event := &github.CheckSuiteEvent{}
+		if err := json.Unmarshal(payload, event); err != nil {
+			return c.JSON(http.StatusBadRequest, map[string]string{"message": "payload is invalid json", "error": err.Error()})
+		}
+
+		if err := rh.githubEventUsecase.CheckSuite(event); err != nil {
+			return err
+		}
+	case "create":
+		event := &github.CreateEvent{}
+		if err := json.Unmarshal(payload, event); err != nil {
+			return c.JSON(http.StatusBadRequest, map[string]string{"message": "payload is invalid json", "error": err.Error()})
+		}
+
+		if err := rh.githubEventUsecase.Create(event); err != nil {
 			return err
 		}
 	}

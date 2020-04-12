@@ -21,70 +21,61 @@ const (
 
 func NewMischanBotRepository(cfg *config.Config, ghs *ghsink.GitHubSink) repository.Repository {
 	return &mischanBotRepository{
-		config: cfg,
-		ghs:    ghs,
+		config:       cfg,
+		ghs:          ghs,
+		targetBranch: "master",
+
+		owner: "MISW",
+		repo:  "mischan-bot",
 	}
 }
 
 type mischanBotRepository struct {
 	config *config.Config
 	ghs    *ghsink.GitHubSink
+
+	targetBranch string
+	owner, repo  string
 }
 
 var _ repository.Repository = &mischanBotRepository{}
 
 func (pr *mischanBotRepository) FullName() string {
-	return "MISW/mischan-bot"
+	return pr.owner + "/" + pr.repo
 }
 
-func (pr *mischanBotRepository) getManifestaInstallationID(ctx context.Context, owner, repo string) (installationID int64, token string, err error) {
-	ins, _, err := pr.ghs.AppsClient().Apps.FindRepositoryInstallation(ctx, owner, repo)
+func (pr *mischanBotRepository) checkSuiteStatus(
+	ctx context.Context,
+	installationID int64,
+) (success bool, sha string, err error) {
+	client := pr.ghs.InstallationClient(installationID)
+
+	checkSuites, _, err := client.Checks.ListCheckSuitesForRef(ctx, "MISW", "mischan-bot", pr.targetBranch, nil)
 
 	if err != nil {
-		return 0, "", xerrors.Errorf("failed to get installation for manifest repository: %w", err)
+		return false, "", xerrors.Errorf("failed list check suites for %s/%s: %w", pr.owner, pr.repo, err)
 	}
 
-	token, err = pr.ghs.InstallationToken(ctx, ins.GetID())
-
-	if err != nil {
-		return 0, "", xerrors.Errorf("failed to get token for installation: %w", err)
+	if len(checkSuites.CheckSuites) == 0 {
+		return false, "", nil
 	}
 
-	return ins.GetID(), token, nil
-}
-
-func (pr *mischanBotRepository) getLatestSHA(ctx context.Context, event *github.StatusEvent) (string, error) {
-	targetBranch := "master"
-
-	maybeCorrectBranch := false
-	for i := range event.Branches {
-		if event.Branches[i].GetName() == targetBranch {
-			maybeCorrectBranch = true
+	success = true
+	for _, suite := range checkSuites.CheckSuites {
+		if suite.GetStatus() != "completed" {
+			success = false
+			break
 		}
+
+		if suite.GetConclusion() != "success" {
+			success = false
+			break
+		}
+
+		sha = suite.GetHeadSHA()
 	}
 
-	if len(event.Branches) == 10 {
-		maybeCorrectBranch = true
-	}
-
-	if !maybeCorrectBranch {
-		return "", nil
-	}
-
-	client := pr.ghs.InstallationClient(event.GetInstallation().GetID())
-
-	master, _, err := client.Repositories.GetBranch(
-		ctx,
-		event.GetRepo().GetOwner().GetLogin(),
-		event.GetRepo().GetName(),
-		targetBranch,
-	)
-
-	if err != nil {
-		return "", xerrors.Errorf("failed to get branch %s: %w", targetBranch, err)
-	}
-
-	return master.GetCommit().GetSHA(), nil
+	return
 }
 
 func (pr *mischanBotRepository) kustomize(shortSHA string) func(ctx context.Context, dir string) error {
@@ -104,22 +95,21 @@ func (pr *mischanBotRepository) kustomize(shortSHA string) func(ctx context.Cont
 	}
 }
 
-func (pr *mischanBotRepository) OnStatus(event *github.StatusEvent) error {
-	if event.GetState() != "success" {
-		return nil
-	}
-
+func (pr *mischanBotRepository) run(installationID int64, expectedSHA string) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Minute)
 	defer cancel()
 
-	appLatestSHA, err := pr.getLatestSHA(ctx, event)
+	success, sha, err := pr.checkSuiteStatus(ctx, installationID)
 
 	if err != nil {
-		return xerrors.Errorf("failed to get latest sha for app repository: %w", err)
+		return xerrors.Errorf("failed to get latest check suite: %w", err)
 	}
 
-	if appLatestSHA != event.GetSHA() {
-		// Old commit
+	if !success {
+		return nil
+	}
+
+	if len(expectedSHA) != 0 && sha != expectedSHA {
 		return nil
 	}
 
@@ -133,7 +123,7 @@ func (pr *mischanBotRepository) OnStatus(event *github.StatusEvent) error {
 		return xerrors.Errorf("failed to close obsolete PRs: %w", err)
 	}
 
-	shortSHA := appLatestSHA[:7]
+	shortSHA := sha[:7]
 
 	if err := manimani.CreatePullRequest(
 		ctx,
@@ -145,8 +135,56 @@ func (pr *mischanBotRepository) OnStatus(event *github.StatusEvent) error {
 	}
 
 	return nil
+
+}
+
+func (pr *mischanBotRepository) OnCheckSuite(event *github.CheckSuiteEvent) error {
+	if event.GetCheckSuite().GetHeadBranch() != pr.targetBranch {
+		return nil
+	}
+
+	err := pr.run(
+		event.GetInstallation().GetID(),
+		event.GetCheckSuite().GetHeadSHA(),
+	)
+
+	if err != nil {
+		return xerrors.Errorf("check suite handler failed: %w", err)
+	}
+
+	return nil
+}
+
+func (pr *mischanBotRepository) OnCreate(event *github.CreateEvent) error {
+	if event.GetRefType() != "branch" || event.GetRef() != pr.targetBranch {
+		return nil
+	}
+
+	err := pr.run(
+		event.GetInstallation().GetID(),
+		"",
+	)
+
+	if err != nil {
+		return xerrors.Errorf("check suite handler failed: %w", err)
+	}
+
+	return nil
 }
 
 func (pr *mischanBotRepository) OnPush(event *github.PushEvent) error {
+	if event.GetRef() != "refs/heads/"+pr.targetBranch {
+		return nil
+	}
+
+	err := pr.run(
+		event.GetInstallation().GetID(),
+		"",
+	)
+
+	if err != nil {
+		return xerrors.Errorf("check suite handler failed: %w", err)
+	}
+
 	return nil
 }

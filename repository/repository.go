@@ -9,9 +9,11 @@ import (
 
 // Repository handles webhook events for each repository
 type Repository interface {
-	OnStatus(event *github.StatusEvent) error
-
 	OnPush(event *github.PushEvent) error
+
+	OnCheckSuite(event *github.CheckSuiteEvent) error
+
+	OnCreate(event *github.CreateEvent) error
 
 	FullName() string
 }
@@ -39,19 +41,34 @@ func (rb *RepositoryBundler) RegisterRepository(repository Repository) {
 	rb.repositories[repository.FullName()] = repository
 }
 
-func (rb *RepositoryBundler) OnStatus(event *github.StatusEvent) error {
+func (rb *RepositoryBundler) OnCreate(event *github.CreateEvent) error {
 	rb.lock.RLock()
 	defer rb.lock.RUnlock()
 
 	repo := event.GetRepo().GetFullName()
 
-	onStatus, ok := rb.repositories[repo]
+	handler, ok := rb.repositories[repo]
 
 	if !ok {
 		return ErrUnknownRepository
 	}
 
-	return onStatus.OnStatus(event)
+	return handler.OnCreate(event)
+}
+
+func (rb *RepositoryBundler) OnCheckSuite(event *github.CheckSuiteEvent) error {
+	rb.lock.RLock()
+	defer rb.lock.RUnlock()
+
+	repo := event.GetRepo().GetFullName()
+
+	handler, ok := rb.repositories[repo]
+
+	if !ok {
+		return ErrUnknownRepository
+	}
+
+	return handler.OnCheckSuite(event)
 }
 
 func (rb *RepositoryBundler) OnPush(event *github.PushEvent) error {
@@ -60,11 +77,11 @@ func (rb *RepositoryBundler) OnPush(event *github.PushEvent) error {
 
 	repo := event.GetRepo().GetFullName()
 
-	onStatus, ok := rb.repositories[repo]
+	handler, ok := rb.repositories[repo]
 
 	if !ok {
 		return ErrUnknownRepository
 	}
 
-	return onStatus.OnPush(event)
+	return handler.OnPush(event)
 }

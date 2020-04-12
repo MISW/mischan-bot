@@ -9,7 +9,8 @@ import (
 
 // GitHubEventUsecase handles GtiHub webhook events
 type GitHubEventUsecase interface {
-	Status(e *github.StatusEvent) error
+	Create(e *github.CreateEvent) error
+	CheckSuite(e *github.CheckSuiteEvent) error
 	Push(e *github.PushEvent) error
 }
 
@@ -26,28 +27,50 @@ func NewGitHubEventUsecase(repoBundler *repository.RepositoryBundler) GitHubEven
 	}
 }
 
-// Status handles status event
-func (geu *gitHubEventUsecase) Status(e *github.StatusEvent) error {
-	if err := geu.repoBundler.OnStatus(e); err != nil {
-		if err == repository.ErrUnknownRepository {
-			return nil
-		}
+// Push handles push events
+// ref. https://developer.github.com/v3/activity/events/types/#pushevent
+func (geu *gitHubEventUsecase) Push(e *github.PushEvent) error {
+	go func() {
+		if err := geu.repoBundler.OnPush(e); err != nil {
+			if err == repository.ErrUnknownRepository {
+				return
+			}
 
-		log.Printf("status event failed for %s: %+v", e.GetRepo().GetFullName(), err)
-	}
+			log.Printf("push event failed for %s: %+v", e.GetRepo().GetFullName(), err)
+		}
+	}()
 
 	return nil
 }
 
-// Push handles push event
-func (geu *gitHubEventUsecase) Push(e *github.PushEvent) error {
-	if err := geu.repoBundler.OnPush(e); err != nil {
-		if err == repository.ErrUnknownRepository {
-			return nil
-		}
+// Create handles create events
+// ref. https://developer.github.com/v3/activity/events/types/#createevent
+func (geu *gitHubEventUsecase) Create(e *github.CreateEvent) error {
+	go func() {
+		if err := geu.repoBundler.OnCreate(e); err != nil {
+			if err == repository.ErrUnknownRepository {
+				return
+			}
 
-		log.Printf("push event failed for %s: %+v", e.GetRepo().GetFullName(), err)
-	}
+			log.Printf("create event failed for %s: %+v", e.GetRepo().GetFullName(), err)
+		}
+	}()
+
+	return nil
+}
+
+// CheckSuite handles check suite events
+// ref. https://developer.github.com/v3/activity/events/types/#checksuiteevent
+func (geu *gitHubEventUsecase) CheckSuite(e *github.CheckSuiteEvent) error {
+	go func() {
+		if err := geu.repoBundler.OnCheckSuite(e); err != nil {
+			if err == repository.ErrUnknownRepository {
+				return
+			}
+
+			log.Printf("check_suite event failed for %s: %+v", e.GetRepo().GetFullName(), err)
+		}
+	}()
 
 	return nil
 }
