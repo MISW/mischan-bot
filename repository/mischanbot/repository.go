@@ -50,7 +50,7 @@ func (pr *mischanBotRepository) checkSuiteStatus(
 ) (success bool, sha string, err error) {
 	client := pr.ghs.InstallationClient(installationID)
 
-	checkSuites, _, err := client.Checks.ListCheckSuitesForRef(ctx, "MISW", "mischan-bot", pr.targetBranch, nil)
+	checkSuites, _, err := client.Checks.ListCheckSuitesForRef(ctx, pr.owner, pr.repo, pr.targetBranch, nil)
 
 	if err != nil {
 		return false, "", xerrors.Errorf("failed list check suites for %s/%s: %w", pr.owner, pr.repo, err)
