@@ -188,6 +188,16 @@ func (mm *ManifestManipulator) CreatePullRequest(
 		return xerrors.Errorf("failed to get worktree for git repo: %w", err)
 	}
 
+	stat, err := wt.Status()
+
+	if err != nil {
+		return xerrors.Errorf("failed to get status for git repository: %w", err)
+	}
+
+	if stat.IsClean() {
+		return nil
+	}
+
 	if _, err := wt.Commit(commitMessage, &git.CommitOptions{
 		All: true,
 		Author: &object.Signature{
