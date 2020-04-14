@@ -70,12 +70,32 @@ func main() {
 		return app, nil
 	}))
 
+	must(container.Provide(func(ghs *ghsink.GitHubSink, app *github.App) (*github.User, error) {
+		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+		defer cancel()
+
+		list, _, err := ghs.AppsClient().Apps.ListInstallations(ctx, nil)
+
+		if err != nil {
+			return nil, err
+		}
+
+		if len(list) == 0 {
+			// TODO: Fix so that client gets bot user without a token for installation
+			return nil, nil
+		}
+
+		user, _, err := ghs.InstallationClient(list[0].GetID()).Users.Get(ctx, app.GetSlug()+"[bot]")
+
+		return user, nil
+	}))
+
 	// Register app repositories
 	must(container.Invoke(func(repoBundler *repository.RepositoryBundler, cfg *config.Config, ghs *ghsink.GitHubSink) {
 		repoBundler.RegisterRepository(portal.NewPortalRepository(cfg, ghs))
 	}))
-	must(container.Invoke(func(repoBundler *repository.RepositoryBundler, cfg *config.Config, ghs *ghsink.GitHubSink, app *github.App) {
-		repoBundler.RegisterRepository(mischanbot.NewMischanBotRepository(cfg, ghs, app))
+	must(container.Invoke(func(repoBundler *repository.RepositoryBundler, cfg *config.Config, ghs *ghsink.GitHubSink, app *github.App, botUser *github.User) {
+		repoBundler.RegisterRepository(mischanbot.NewMischanBotRepository(cfg, ghs, app, botUser))
 	}))
 
 	must(container.Invoke(func(e *echo.Echo, cfg *config.Config, ghu usecase.GitHubEventUsecase) error {

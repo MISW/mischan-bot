@@ -19,11 +19,12 @@ const (
 	branchPrefix = "mischan-bot/misw/mischan-bot/"
 )
 
-func NewMischanBotRepository(cfg *config.Config, ghs *ghsink.GitHubSink, app *github.App) repository.Repository {
+func NewMischanBotRepository(cfg *config.Config, ghs *ghsink.GitHubSink, app *github.App, botUser *github.User) repository.Repository {
 	return &mischanBotRepository{
 		config:       cfg,
 		ghs:          ghs,
 		app:          app,
+		botUser:      botUser,
 		targetBranch: "master",
 
 		owner: "MISW",
@@ -32,9 +33,10 @@ func NewMischanBotRepository(cfg *config.Config, ghs *ghsink.GitHubSink, app *gi
 }
 
 type mischanBotRepository struct {
-	config *config.Config
-	ghs    *ghsink.GitHubSink
-	app    *github.App
+	config  *config.Config
+	ghs     *ghsink.GitHubSink
+	app     *github.App
+	botUser *github.User
 
 	targetBranch string
 	owner, repo  string
@@ -122,7 +124,7 @@ func (pr *mischanBotRepository) run(installationID int64, expectedSHA string) er
 	}
 
 	manimani.CommiterName = pr.app.GetName()
-	manimani.CommiterEmail = fmt.Sprintf("%d+%s[bot]@users.noreply.github.com", pr.app.GetID(), pr.app.GetSlug())
+	manimani.CommiterEmail = fmt.Sprintf("%d+%s[bot]@users.noreply.github.com", pr.botUser.GetID(), pr.app.GetSlug())
 
 	if err := manimani.CloseObsoletePRs(ctx, branchPrefix); err != nil {
 		return xerrors.Errorf("failed to close obsolete PRs: %w", err)
