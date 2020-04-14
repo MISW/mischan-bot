@@ -13,6 +13,7 @@ import (
 	"github.com/MISW/mischan-bot/intenral/gitutil"
 	"github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/config"
+	"github.com/go-git/go-git/v5/plumbing"
 	"github.com/go-git/go-git/v5/plumbing/object"
 	"github.com/google/go-github/v30/github"
 	"golang.org/x/xerrors"
@@ -47,7 +48,7 @@ func NewManifestManipulator(ctx context.Context, ghs *ghsink.GitHubSink, repoNam
 		repo:  arr[1],
 
 		BaseBranch:    "master",
-		CommiterName:  "michan-bot",
+		CommiterName:  "mischan-bot",
 		CommiterEmail: "mischan-bot@users.noreply.github.com",
 	}
 
@@ -79,7 +80,7 @@ func (mm *ManifestManipulator) getInstallation(ctx context.Context) error {
 	return nil
 }
 
-func (mm *ManifestManipulator) CloseObsolatePRs(ctx context.Context, branchPrefix string) error {
+func (mm *ManifestManipulator) CloseObsoletePRs(ctx context.Context, branchPrefix string) error {
 	obsoletePRs, _, err := mm.client.PullRequests.List(
 		ctx,
 		mm.owner,
@@ -118,7 +119,7 @@ func (mm *ManifestManipulator) CloseObsolatePRs(ctx context.Context, branchPrefi
 				log.Printf("failed to close pull request %d for %s/%s: %+v", pr.GetNumber(), mm.owner, mm.repo, err)
 			}
 
-			_, err = mm.client.Git.DeleteRef(ctx, mm.owner, mm.repo, pr.GetHead().GetRef())
+			_, err = mm.client.Git.DeleteRef(ctx, mm.owner, mm.repo, "heads/"+pr.GetHead().GetRef())
 
 			if err != nil {
 				log.Printf("failed to delete branch for pull requesst %d for %s/%s: %+v", pr.GetNumber(), mm.owner, mm.repo, err)
@@ -132,7 +133,7 @@ func (mm *ManifestManipulator) CloseObsolatePRs(ctx context.Context, branchPrefi
 }
 
 func (mm *ManifestManipulator) getLatestSHA(ctx context.Context) error {
-	ref, _, err := mm.client.Git.GetRef(ctx, mm.owner, mm.repo, mm.BaseBranch)
+	ref, _, err := mm.client.Git.GetRef(ctx, mm.owner, mm.repo, "heads/"+mm.BaseBranch)
 
 	if err != nil {
 		return xerrors.Errorf("failed to get ref: %w", err)
@@ -170,7 +171,7 @@ func (mm *ManifestManipulator) CreatePullRequest(
 	gitrepo, dir, err := gitutil.CloneRepository(
 		ctx,
 		fmt.Sprintf("https://github.com/%s/%s.git", mm.owner, mm.repo),
-		branchName,
+		mm.BaseBranch,
 	)
 	defer os.RemoveAll(dir)
 
@@ -178,14 +179,22 @@ func (mm *ManifestManipulator) CreatePullRequest(
 		return xerrors.Errorf("failed to clone repository: %w", err)
 	}
 
-	if err := manipulator(ctx, dir); err != nil {
-		return xerrors.Errorf("updating image tag failed: %w", err)
-	}
-
 	wt, err := gitrepo.Worktree()
 
 	if err != nil {
 		return xerrors.Errorf("failed to get worktree for git repo: %w", err)
+	}
+
+	if err := wt.Checkout(&git.CheckoutOptions{
+		Create: true,
+		Force:  true,
+		Branch: plumbing.NewBranchReferenceName(branchName),
+	}); err != nil {
+		return xerrors.Errorf("failed to checkout branch %s: %w", branchName, err)
+	}
+
+	if err := manipulator(ctx, dir); err != nil {
+		return xerrors.Errorf("updating image tag failed: %w", err)
 	}
 
 	stat, err := wt.Status()
@@ -209,12 +218,14 @@ func (mm *ManifestManipulator) CreatePullRequest(
 		return xerrors.Errorf("failed to commit changes: %w", err)
 	}
 
-	if err := gitrepo.Push(&git.PushOptions{
-		RemoteName: "origin",
-		RefSpecs: []config.RefSpec{
-			config.RefSpec(fmt.Sprintf("+refs/heads/%s:refs/remotes/origin/%s", branchName, branchName)),
+	if err := gitrepo.PushContext(
+		ctx,
+		&git.PushOptions{
+			RefSpecs: []config.RefSpec{
+				config.RefSpec("+refs/heads/*:refs/heads/*"),
+			},
 		},
-	}); err != nil {
+	); err != nil {
 		return xerrors.Errorf("failed to push to remote repository: %w", err)
 	}
 

@@ -50,18 +50,18 @@ func (pr *mischanBotRepository) checkSuiteStatus(
 ) (success bool, sha string, err error) {
 	client := pr.ghs.InstallationClient(installationID)
 
-	checkSuites, _, err := client.Checks.ListCheckSuitesForRef(ctx, pr.owner, pr.repo, pr.targetBranch, nil)
+	checkSuites, _, err := client.Checks.ListCheckRunsForRef(ctx, pr.owner, pr.repo, pr.targetBranch, nil)
 
 	if err != nil {
 		return false, "", xerrors.Errorf("failed list check suites for %s/%s: %w", pr.owner, pr.repo, err)
 	}
 
-	if len(checkSuites.CheckSuites) == 0 {
+	if len(checkSuites.CheckRuns) == 0 {
 		return false, "", nil
 	}
 
 	success = true
-	for _, suite := range checkSuites.CheckSuites {
+	for _, suite := range checkSuites.CheckRuns {
 		if suite.GetStatus() != "completed" {
 			success = false
 			break
@@ -119,7 +119,7 @@ func (pr *mischanBotRepository) run(installationID int64, expectedSHA string) er
 		return xerrors.Errorf("failed to initialize GitHub client for manifest repository: %w", err)
 	}
 
-	if err := manimani.CloseObsolatePRs(ctx, branchPrefix); err != nil {
+	if err := manimani.CloseObsoletePRs(ctx, branchPrefix); err != nil {
 		return xerrors.Errorf("failed to close obsolete PRs: %w", err)
 	}
 
@@ -128,7 +128,7 @@ func (pr *mischanBotRepository) run(installationID int64, expectedSHA string) er
 	if err := manimani.CreatePullRequest(
 		ctx,
 		branchPrefix+shortSHA,
-		fmt.Sprintf("Update MISW/mischan-bot to "),
+		fmt.Sprintf("Update MISW/mischan-bot to %s", shortSHA),
 		pr.kustomize(shortSHA),
 	); err != nil {
 		return xerrors.Errorf("failed to create pull request: %w", err)

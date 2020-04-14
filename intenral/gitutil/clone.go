@@ -41,12 +41,12 @@ func (ghu *GitHubUtil) CloneRepository(ctx context.Context, gitURL string, ref s
 
 	repo, err = git.PlainCloneContext(ctx, dir, false, &git.CloneOptions{
 		URL:           u.String(),
-		ReferenceName: plumbing.ReferenceName(ref),
+		ReferenceName: plumbing.NewBranchReferenceName(ref),
 	})
 
 	if err != nil {
 		return nil, "", xerrors.Errorf("failed to clone repository: %w", err)
 	}
 
-	return repo, "", nil
+	return repo, dir, nil
 }

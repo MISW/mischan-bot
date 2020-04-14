@@ -130,7 +130,7 @@ func (pr *portalRepository) run(installationID int64, expectedSHA string) error 
 		return xerrors.Errorf("failed to initialize GitHub client for manifest repository: %w", err)
 	}
 
-	if err := manimani.CloseObsolatePRs(ctx, branchPrefix); err != nil {
+	if err := manimani.CloseObsoletePRs(ctx, branchPrefix); err != nil {
 		return xerrors.Errorf("failed to close obsolete PRs: %w", err)
 	}
 
