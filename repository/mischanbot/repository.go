@@ -19,10 +19,11 @@ const (
 	branchPrefix = "mischan-bot/misw/mischan-bot/"
 )
 
-func NewMischanBotRepository(cfg *config.Config, ghs *ghsink.GitHubSink) repository.Repository {
+func NewMischanBotRepository(cfg *config.Config, ghs *ghsink.GitHubSink, app *github.App) repository.Repository {
 	return &mischanBotRepository{
 		config:       cfg,
 		ghs:          ghs,
+		app:          app,
 		targetBranch: "master",
 
 		owner: "MISW",
@@ -33,6 +34,7 @@ func NewMischanBotRepository(cfg *config.Config, ghs *ghsink.GitHubSink) reposit
 type mischanBotRepository struct {
 	config *config.Config
 	ghs    *ghsink.GitHubSink
+	app    *github.App
 
 	targetBranch string
 	owner, repo  string
@@ -50,18 +52,18 @@ func (pr *mischanBotRepository) checkSuiteStatus(
 ) (success bool, sha string, err error) {
 	client := pr.ghs.InstallationClient(installationID)
 
-	checkSuites, _, err := client.Checks.ListCheckRunsForRef(ctx, pr.owner, pr.repo, pr.targetBranch, nil)
+	checkRuns, _, err := client.Checks.ListCheckRunsForRef(ctx, pr.owner, pr.repo, pr.targetBranch, nil)
 
 	if err != nil {
 		return false, "", xerrors.Errorf("failed list check suites for %s/%s: %w", pr.owner, pr.repo, err)
 	}
 
-	if len(checkSuites.CheckRuns) == 0 {
+	if len(checkRuns.CheckRuns) == 0 {
 		return false, "", nil
 	}
 
 	success = true
-	for _, suite := range checkSuites.CheckRuns {
+	for _, suite := range checkRuns.CheckRuns {
 		if suite.GetStatus() != "completed" {
 			success = false
 			break
@@ -118,6 +120,9 @@ func (pr *mischanBotRepository) run(installationID int64, expectedSHA string) er
 	if err != nil {
 		return xerrors.Errorf("failed to initialize GitHub client for manifest repository: %w", err)
 	}
+
+	manimani.CommiterName = pr.app.GetName()
+	manimani.CommiterEmail = fmt.Sprintf("%d+%s@@users.noreply.github.com", pr.app.GetID(), pr.app.GetSlug())
 
 	if err := manimani.CloseObsoletePRs(ctx, branchPrefix); err != nil {
 		return xerrors.Errorf("failed to close obsolete PRs: %w", err)
