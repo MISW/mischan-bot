@@ -122,7 +122,7 @@ func (pr *mischanBotRepository) run(installationID int64, expectedSHA string) er
 	}
 
 	manimani.CommiterName = pr.app.GetName()
-	manimani.CommiterEmail = fmt.Sprintf("%d+%s@@users.noreply.github.com", pr.app.GetID(), pr.app.GetSlug())
+	manimani.CommiterEmail = fmt.Sprintf("%d+%s[bot]@users.noreply.github.com", pr.app.GetID(), pr.app.GetSlug())
 
 	if err := manimani.CloseObsoletePRs(ctx, branchPrefix); err != nil {
 		return xerrors.Errorf("failed to close obsolete PRs: %w", err)
