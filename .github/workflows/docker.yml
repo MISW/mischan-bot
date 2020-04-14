@@ -9,16 +9,16 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-      # - name: Build Docker Image
-      #   uses: docker/build-push-action@v1
-      #   with:
-      #     username: ${GITHUB_ACTOR}
-      #     password: ${{ secrets.GITHUB_TOKEN }}
-      #     repository: misw/mischan-bot/mischan-bot
-      #     registry: docker.pkg.github.com
-      #     dockerfile: Dockerfile
-      #     tag_with_ref: true
-      #     tag_with_sha: true
+      - name: Build Docker Image
+        uses: docker/build-push-action@v1
+        with:
+          username: ${GITHUB_ACTOR}
+          password: ${{ secrets.GITHUB_TOKEN }}
+          repository: misw/mischan-bot/mischan-bot
+          registry: docker.pkg.github.com
+          dockerfile: Dockerfile
+          tag_with_ref: true
+          tag_with_sha: true
 
       - name: Build Docker Image　(for internal registry)
         uses: docker/build-push-action@v1
