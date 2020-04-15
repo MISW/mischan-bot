@@ -19,8 +19,9 @@ const (
 	branchPrefix = "mischan-bot/misw/mischan-bot/"
 )
 
+// NewMischanBotRepository initializes repository for MISW/mischan-bot
 func NewMischanBotRepository(cfg *config.Config, ghs *ghsink.GitHubSink, app *github.App, botUser *github.User) repository.Repository {
-	return &mischanBotRepository{
+	return &gitOpsRepository{
 		config:       cfg,
 		ghs:          ghs,
 		app:          app,
@@ -32,7 +33,7 @@ func NewMischanBotRepository(cfg *config.Config, ghs *ghsink.GitHubSink, app *gi
 	}
 }
 
-type mischanBotRepository struct {
+type gitOpsRepository struct {
 	config  *config.Config
 	ghs     *ghsink.GitHubSink
 	app     *github.App
@@ -42,22 +43,22 @@ type mischanBotRepository struct {
 	owner, repo  string
 }
 
-var _ repository.Repository = &mischanBotRepository{}
+var _ repository.Repository = &gitOpsRepository{}
 
-func (pr *mischanBotRepository) FullName() string {
-	return pr.owner + "/" + pr.repo
+func (gor *gitOpsRepository) FullName() string {
+	return gor.owner + "/" + gor.repo
 }
 
-func (pr *mischanBotRepository) checkSuiteStatus(
+func (gor *gitOpsRepository) checkSuiteStatus(
 	ctx context.Context,
 	installationID int64,
 ) (success bool, sha string, err error) {
-	client := pr.ghs.InstallationClient(installationID)
+	client := gor.ghs.InstallationClient(installationID)
 
-	checkRuns, _, err := client.Checks.ListCheckRunsForRef(ctx, pr.owner, pr.repo, pr.targetBranch, nil)
+	checkRuns, _, err := client.Checks.ListCheckRunsForRef(ctx, gor.owner, gor.repo, gor.targetBranch, nil)
 
 	if err != nil {
-		return false, "", xerrors.Errorf("failed list check suites for %s/%s: %w", pr.owner, pr.repo, err)
+		return false, "", xerrors.Errorf("failed list check suites for %s/%s: %w", gor.owner, gor.repo, err)
 	}
 
 	if len(checkRuns.CheckRuns) == 0 {
@@ -82,7 +83,7 @@ func (pr *mischanBotRepository) checkSuiteStatus(
 	return
 }
 
-func (pr *mischanBotRepository) kustomize(shortSHA string) func(ctx context.Context, dir string) error {
+func (gor *gitOpsRepository) kustomize(shortSHA string) func(ctx context.Context, dir string) error {
 	return func(ctx context.Context, dir string) error {
 		cmd := exec.CommandContext(
 			ctx, "kustomize", "edit", "set", "image", "registry.misw.jp/mischan-bot/mischan-bot:sha-"+shortSHA,
@@ -99,11 +100,11 @@ func (pr *mischanBotRepository) kustomize(shortSHA string) func(ctx context.Cont
 	}
 }
 
-func (pr *mischanBotRepository) run(installationID int64, expectedSHA string) error {
+func (gor *gitOpsRepository) run(installationID int64, expectedSHA string) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Minute)
 	defer cancel()
 
-	success, sha, err := pr.checkSuiteStatus(ctx, installationID)
+	success, sha, err := gor.checkSuiteStatus(ctx, installationID)
 
 	if err != nil {
 		return xerrors.Errorf("failed to get latest check suite: %w", err)
@@ -117,14 +118,14 @@ func (pr *mischanBotRepository) run(installationID int64, expectedSHA string) er
 		return nil
 	}
 
-	manimani, err := manifrepo.NewManifestManipulator(ctx, pr.ghs, "MISW/k8s")
+	manimani, err := manifrepo.NewManifestManipulator(ctx, gor.ghs, "MISW/k8s")
 
 	if err != nil {
 		return xerrors.Errorf("failed to initialize GitHub client for manifest repository: %w", err)
 	}
 
-	manimani.CommiterName = pr.app.GetName()
-	manimani.CommiterEmail = fmt.Sprintf("%d+%s[bot]@users.noreply.github.com", pr.botUser.GetID(), pr.app.GetSlug())
+	manimani.CommiterName = gor.app.GetName()
+	manimani.CommiterEmail = fmt.Sprintf("%d+%s[bot]@users.noreply.github.com", gor.botUser.GetID(), gor.app.GetSlug())
 
 	if err := manimani.CloseObsoletePRs(ctx, branchPrefix); err != nil {
 		return xerrors.Errorf("failed to close obsolete PRs: %w", err)
@@ -136,7 +137,7 @@ func (pr *mischanBotRepository) run(installationID int64, expectedSHA string) er
 		ctx,
 		branchPrefix+shortSHA,
 		fmt.Sprintf("Update MISW/mischan-bot to %s", shortSHA),
-		pr.kustomize(shortSHA),
+		gor.kustomize(shortSHA),
 	); err != nil {
 		return xerrors.Errorf("failed to create pull request: %w", err)
 	}
@@ -145,12 +146,12 @@ func (pr *mischanBotRepository) run(installationID int64, expectedSHA string) er
 
 }
 
-func (pr *mischanBotRepository) OnCheckSuite(event *github.CheckSuiteEvent) error {
-	if event.GetCheckSuite().GetHeadBranch() != pr.targetBranch {
+func (gor *gitOpsRepository) OnCheckSuite(event *github.CheckSuiteEvent) error {
+	if event.GetCheckSuite().GetHeadBranch() != gor.targetBranch {
 		return nil
 	}
 
-	err := pr.run(
+	err := gor.run(
 		event.GetInstallation().GetID(),
 		event.GetCheckSuite().GetHeadSHA(),
 	)
@@ -162,12 +163,12 @@ func (pr *mischanBotRepository) OnCheckSuite(event *github.CheckSuiteEvent) erro
 	return nil
 }
 
-func (pr *mischanBotRepository) OnCreate(event *github.CreateEvent) error {
-	if event.GetRefType() != "branch" || event.GetRef() != pr.targetBranch {
+func (gor *gitOpsRepository) OnCreate(event *github.CreateEvent) error {
+	if event.GetRefType() != "branch" || event.GetRef() != gor.targetBranch {
 		return nil
 	}
 
-	err := pr.run(
+	err := gor.run(
 		event.GetInstallation().GetID(),
 		"",
 	)
@@ -179,12 +180,12 @@ func (pr *mischanBotRepository) OnCreate(event *github.CreateEvent) error {
 	return nil
 }
 
-func (pr *mischanBotRepository) OnPush(event *github.PushEvent) error {
-	if event.GetRef() != "refs/heads/"+pr.targetBranch {
+func (gor *gitOpsRepository) OnPush(event *github.PushEvent) error {
+	if event.GetRef() != "refs/heads/"+gor.targetBranch {
 		return nil
 	}
 
-	err := pr.run(
+	err := gor.run(
 		event.GetInstallation().GetID(),
 		"",
 	)

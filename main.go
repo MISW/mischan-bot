@@ -91,8 +91,8 @@ func main() {
 	}))
 
 	// Register app repositories
-	must(container.Invoke(func(repoBundler *repository.RepositoryBundler, cfg *config.Config, ghs *ghsink.GitHubSink) {
-		repoBundler.RegisterRepository(portal.NewPortalRepository(cfg, ghs))
+	must(container.Invoke(func(repoBundler *repository.RepositoryBundler, cfg *config.Config, ghs *ghsink.GitHubSink, app *github.App, botUser *github.User) {
+		repoBundler.RegisterRepository(portal.NewPortalRepository(cfg, ghs, app, botUser))
 	}))
 	must(container.Invoke(func(repoBundler *repository.RepositoryBundler, cfg *config.Config, ghs *ghsink.GitHubSink, app *github.App, botUser *github.User) {
 		repoBundler.RegisterRepository(mischanbot.NewMischanBotRepository(cfg, ghs, app, botUser))
