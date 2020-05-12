@@ -87,7 +87,6 @@ func (mm *ManifestManipulator) CloseObsoletePRs(ctx context.Context, branchPrefi
 		mm.repo,
 		&github.PullRequestListOptions{
 			State: "open",
-			Head:  branchPrefix,
 		},
 	)
 
@@ -101,6 +100,13 @@ func (mm *ManifestManipulator) CloseObsoletePRs(ctx context.Context, branchPrefi
 
 	var wg sync.WaitGroup
 	for i := range obsoletePRs {
+		if !strings.HasPrefix(
+			obsoletePRs[i].GetHead().GetRef(),
+			branchPrefix,
+		) {
+			continue
+		}
+
 		wg.Add(1)
 		go func(pr *github.PullRequest) {
 			defer wg.Done()
