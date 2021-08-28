@@ -147,7 +147,7 @@ func (gor *gitOpsRepository) run(installationID int64, expectedSHA string) error
 	if err := manimani.CreatePullRequest(
 		ctx,
 		branchPrefix+shortSHA,
-		fmt.Sprintf("Update MISW/mischan-bot to %s", shortSHA),
+		fmt.Sprintf("Update MISW/Portal to %s", shortSHA),
 		gor.kustomize(shortSHA),
 	); err != nil {
 		return xerrors.Errorf("failed to create pull request: %w", err)
