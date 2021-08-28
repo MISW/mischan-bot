@@ -3,6 +3,7 @@ ARG go_version=1.14
 FROM golang:${go_version} as tools
 
 ENV GO111MODULE=on
+ENV CGO_ENABLED=0
 RUN go get sigs.k8s.io/kustomize/kustomize/v3@v3.3.0
 
 FROM golang:${go_version} as builder
