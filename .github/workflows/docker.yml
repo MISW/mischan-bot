@@ -6,6 +6,8 @@ jobs:
   build:
     runs-on: ubuntu-latest
 
+    timeout-minutes: 10
+
     steps:
       - uses: actions/checkout@v2
 
@@ -13,9 +15,9 @@ jobs:
 
       - uses: docker/login-action@v1
         with:
-          registry: ghcr.io
-          username: ${ GITHUB_ACTOR }
-          password: ${ secrets.GITHUB_TOKEN }
+          registry: https://ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
       - uses: docker/login-action@v1
         with:
@@ -25,7 +27,7 @@ jobs:
 
       - name: Docker meta
         id: meta
-        uses: crazy-max/ghaction-docker-meta@v2
+        uses: docker/metadata-action@v2
         with:
           images: |
             ghcr.io/misw/mischan-bot
