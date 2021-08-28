@@ -72,7 +72,9 @@ func (gor *gitOpsRepository) checkSuiteStatus(
 			break
 		}
 
-		if suite.GetConclusion() != "success" {
+		conclusion := suite.GetConclusion()
+
+		if conclusion != "success" && conclusion != "neutral" && conclusion != "skipped" {
 			success = false
 			break
 		}
