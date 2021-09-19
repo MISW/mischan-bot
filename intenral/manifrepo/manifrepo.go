@@ -169,7 +169,7 @@ func (mm *ManifestManipulator) CreatePullRequest(
 	)
 
 	if err != nil {
-		return xerrors.Errorf("failed to create branch: %w", err)
+		return xerrors.Errorf("failed to create branch(%s): %w", branchName, err)
 	}
 
 	gitutil := gitutil.NewGitHubUtil(mm.token, mm.client)
