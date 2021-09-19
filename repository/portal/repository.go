@@ -2,7 +2,9 @@ package portal
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
+	"log"
 	"os/exec"
 	"path/filepath"
 	"time"
@@ -73,6 +75,11 @@ func (gor *gitOpsRepository) checkSuiteStatus(
 		}
 
 		conclusion := suite.GetConclusion()
+		
+		suiteJSON, err := json.Marshal(suite)
+		if err == nil {
+			log.Printf("suite: %s", string(suiteJSON))
+		}
 
 		if conclusion != "success" && conclusion != "neutral" && conclusion != "skipped" {
 			success = false
