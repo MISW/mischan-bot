@@ -10,6 +10,7 @@ import (
 	"github.com/MISW/mischan-bot/handler"
 	"github.com/MISW/mischan-bot/intenral/ghsink"
 	"github.com/MISW/mischan-bot/repository"
+	"github.com/MISW/mischan-bot/repository/birdol"
 	"github.com/MISW/mischan-bot/repository/mischanbot"
 	"github.com/MISW/mischan-bot/repository/modoki"
 	"github.com/MISW/mischan-bot/repository/portal"
@@ -100,6 +101,9 @@ func main() {
 	}))
 	must(container.Invoke(func(repoBundler *repository.RepositoryBundler, cfg *config.Config, ghs *ghsink.GitHubSink, app *github.App, botUser *github.User) {
 		repoBundler.RegisterRepository(modoki.NewModokiRepository(cfg, ghs, app, botUser))
+	}))
+	must(container.Invoke(func(repoBundler *repository.RepositoryBundler, cfg *config.Config, ghs *ghsink.GitHubSink, app *github.App, botUser *github.User) {
+		repoBundler.RegisterRepository(birdol.NewBirdolRepository(cfg, ghs, app, botUser))
 	}))
 
 	must(container.Invoke(func(e *echo.Echo, cfg *config.Config, ghu usecase.GitHubEventUsecase) error {
