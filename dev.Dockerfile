@@ -1,7 +1,7 @@
-FROM golang:1.14 as tools
+FROM golang:1.17 as tools
 
 ENV GO111MODULE=on
-RUN go get sigs.k8s.io/kustomize/kustomize/v3@v3.3.0
+RUN go get sigs.k8s.io/kustomize/kustomize/v4@v4.4.1
 
 COPY . /work
 WORKDIR /work

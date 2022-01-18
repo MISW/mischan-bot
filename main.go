@@ -15,7 +15,7 @@ import (
 	"github.com/MISW/mischan-bot/repository/modoki"
 	"github.com/MISW/mischan-bot/repository/portal"
 	"github.com/MISW/mischan-bot/usecase"
-	"github.com/google/go-github/v30/github"
+	"github.com/google/go-github/v42/github"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"go.uber.org/dig"

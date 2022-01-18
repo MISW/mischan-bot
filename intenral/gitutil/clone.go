@@ -7,7 +7,7 @@ import (
 
 	"github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/plumbing"
-	"github.com/google/go-github/v30/github"
+	"github.com/google/go-github/v42/github"
 	"golang.org/x/xerrors"
 )
 

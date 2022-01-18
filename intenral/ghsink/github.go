@@ -5,8 +5,8 @@ import (
 	"net/http"
 
 	"github.com/MISW/mischan-bot/config"
-	"github.com/bradleyfalzon/ghinstallation"
-	"github.com/google/go-github/v30/github"
+	"github.com/bradleyfalzon/ghinstallation/v2"
+	"github.com/google/go-github/v42/github"
 	"golang.org/x/xerrors"
 )
 
