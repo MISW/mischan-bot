@@ -8,7 +8,7 @@ require (
 	github.com/google/go-github/v42 v42.0.0
 	github.com/heetch/confita v0.10.0
 	github.com/labstack/echo/v4 v4.6.3
-	go.uber.org/dig v1.13.0
+	go.uber.org/dig v1.14.1
 	golang.org/x/xerrors v0.0.0-20200804184101-5ec99f83aff1
 )
 
