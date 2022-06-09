@@ -4,7 +4,7 @@ import (
 	"log"
 
 	"github.com/MISW/mischan-bot/repository"
-	"github.com/google/go-github/v42/github"
+	"github.com/google/go-github/v45/github"
 )
 
 // GitHubEventUsecase handles GtiHub webhook events

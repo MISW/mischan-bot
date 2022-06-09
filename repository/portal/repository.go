@@ -13,7 +13,7 @@ import (
 	"github.com/MISW/mischan-bot/intenral/ghsink"
 	"github.com/MISW/mischan-bot/intenral/manifrepo"
 	"github.com/MISW/mischan-bot/repository"
-	"github.com/google/go-github/v42/github"
+	"github.com/google/go-github/v45/github"
 	"golang.org/x/xerrors"
 )
 

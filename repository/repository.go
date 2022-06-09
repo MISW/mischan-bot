@@ -3,7 +3,7 @@ package repository
 import (
 	"sync"
 
-	"github.com/google/go-github/v42/github"
+	"github.com/google/go-github/v45/github"
 	"golang.org/x/xerrors"
 )
 

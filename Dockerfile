@@ -1,10 +1,10 @@
-ARG go_version=1.17
+ARG go_version=1.18
 
 FROM golang:${go_version} as tools
 
 ENV GO111MODULE=on
 ENV CGO_ENABLED=0
-RUN go get sigs.k8s.io/kustomize/kustomize/v4@v4.4.1
+RUN go install sigs.k8s.io/kustomize/kustomize/v4@v4.5.5
 
 FROM golang:${go_version} as builder
 
