@@ -9,7 +9,7 @@ require (
 	github.com/heetch/confita v0.10.0
 	github.com/labstack/echo/v4 v4.9.0
 	go.uber.org/dig v1.14.1
-	golang.org/x/xerrors v0.0.0-20220609144429-65e65417b02f
+	golang.org/x/xerrors v0.0.0-20220907171357-04be3eba64a2
 )
 
 require (
