@@ -3,7 +3,7 @@ module github.com/MISW/mischan-bot
 go 1.19
 
 require (
-	github.com/bradleyfalzon/ghinstallation/v2 v2.0.4
+	github.com/bradleyfalzon/ghinstallation/v2 v2.1.0
 	github.com/go-git/go-git/v5 v5.4.2
 	github.com/google/go-github/v45 v45.2.0
 	github.com/heetch/confita v0.10.0
@@ -21,7 +21,7 @@ require (
 	github.com/go-git/gcfg v1.5.0 // indirect
 	github.com/go-git/go-billy/v5 v5.3.1 // indirect
 	github.com/golang-jwt/jwt v3.2.2+incompatible // indirect
-	github.com/golang-jwt/jwt/v4 v4.0.0 // indirect
+	github.com/golang-jwt/jwt/v4 v4.4.1 // indirect
 	github.com/google/go-github/v41 v41.0.0 // indirect
 	github.com/google/go-querystring v1.1.0 // indirect
 	github.com/imdario/mergo v0.3.12 // indirect
