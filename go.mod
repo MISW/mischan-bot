@@ -6,6 +6,7 @@ require (
 	github.com/bradleyfalzon/ghinstallation/v2 v2.0.4
 	github.com/go-git/go-git/v5 v5.4.2
 	github.com/google/go-github/v45 v45.2.0
+	github.com/google/go-github/v48 v48.2.0
 	github.com/heetch/confita v0.10.0
 	github.com/labstack/echo/v4 v4.9.0
 	go.uber.org/dig v1.14.1
