@@ -6,7 +6,7 @@ import (
 
 	"github.com/MISW/mischan-bot/config"
 	"github.com/bradleyfalzon/ghinstallation/v2"
-	"github.com/google/go-github/v45/github"
+	"github.com/google/go-github/v49/github"
 	"golang.org/x/xerrors"
 )
 

@@ -6,7 +6,7 @@ import (
 
 	"github.com/MISW/mischan-bot/config"
 	"github.com/MISW/mischan-bot/usecase"
-	"github.com/google/go-github/v45/github"
+	"github.com/google/go-github/v49/github"
 	"github.com/labstack/echo/v4"
 )
 

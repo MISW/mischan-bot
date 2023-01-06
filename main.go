@@ -15,7 +15,7 @@ import (
 	"github.com/MISW/mischan-bot/repository/modoki"
 	"github.com/MISW/mischan-bot/repository/portal"
 	"github.com/MISW/mischan-bot/usecase"
-	"github.com/google/go-github/v45/github"
+	"github.com/google/go-github/v49/github"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"go.uber.org/dig"
@@ -88,6 +88,10 @@ func main() {
 		}
 
 		user, _, err := ghs.InstallationClient(list[0].GetID()).Users.Get(ctx, app.GetSlug()+"[bot]")
+
+		if err != nil {
+			return nil, err
+		}
 
 		return user, nil
 	}))

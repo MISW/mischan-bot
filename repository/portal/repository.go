@@ -13,7 +13,7 @@ import (
 	"github.com/MISW/mischan-bot/intenral/ghsink"
 	"github.com/MISW/mischan-bot/intenral/manifrepo"
 	"github.com/MISW/mischan-bot/repository"
-	"github.com/google/go-github/v45/github"
+	"github.com/google/go-github/v49/github"
 	"golang.org/x/xerrors"
 )
 
@@ -75,7 +75,7 @@ func (gor *gitOpsRepository) checkSuiteStatus(
 		}
 
 		conclusion := suite.GetConclusion()
-		
+
 		suiteJSON, err := json.Marshal(suite)
 		if err == nil {
 			log.Printf("suite: %s", string(suiteJSON))

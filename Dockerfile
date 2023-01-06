@@ -1,21 +1,37 @@
 ARG go_version=1.19
+ARG kustomize_version=v4.5.7
 
-FROM golang:${go_version} as tools
+# development
+FROM golang:${go_version} AS development
 
-ENV GO111MODULE=on
-ENV CGO_ENABLED=0
-RUN go install sigs.k8s.io/kustomize/kustomize/v4@v4.5.5
+RUN go install sigs.k8s.io/kustomize/kustomize/v4@${kustomize_version}
 
-FROM golang:${go_version} as builder
+COPY . /mischan-bot
 
-COPY . /work
-ENV GO111MODULE=on
-ENV CGO_ENABLED=0
-RUN cd /work && go build -o /mischan-bot
+WORKDIR /mischan-bot
 
-FROM gcr.io/distroless/static:debug
+CMD go mod download \
+  && GO111MODULE=on go run main.go
 
-COPY --from=tools /go/bin/kustomize /bin
-COPY --from=builder /mischan-bot /bin
+# workspace
+FROM golang:${go_version} AS workspace
 
-ENTRYPOINT [ "/bin/mischan-bot" ]
+RUN go install sigs.k8s.io/kustomize/kustomize/v4@${kustomize_version}
+
+COPY . /mischan-bot
+
+WORKDIR /mischan-bot
+
+RUN go mod download \
+  && GO111MODULE=on go build -buildmode pie -o /mischan-bot/mischan-bot
+
+# production
+FROM gcr.io/distroless/base:debug AS production
+
+RUN ["/busybox/sh", "-c", "ln -s /busybox/sh /bin/sh"]
+RUN ["/busybox/sh", "-c", "ln -s /bin/env /usr/bin/env"]
+
+COPY --from=workspace /mischan-bot/mischan-bot /bin/mischan-bot
+COPY --from=workspace /go/bin/kustomize /bin/kustomize
+
+ENTRYPOINT ["/bin/mischan-bot"]

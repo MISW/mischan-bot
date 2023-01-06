@@ -2,12 +2,12 @@ package gitutil
 
 import (
 	"context"
-	"io/ioutil"
 	"net/url"
+	"os"
 
 	"github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/plumbing"
-	"github.com/google/go-github/v45/github"
+	"github.com/google/go-github/v49/github"
 	"golang.org/x/xerrors"
 )
 
@@ -27,7 +27,7 @@ func NewGitHubUtil(token string, client *github.Client) *GitHubUtil {
 
 // CloneRepository clones a repository on local filesystem
 func (ghu *GitHubUtil) CloneRepository(ctx context.Context, gitURL string, ref string) (repo *git.Repository, dir string, err error) {
-	dir, err = ioutil.TempDir("", "mischan-bot-")
+	dir, err = os.MkdirTemp("", "mischan-bot-")
 
 	if err != nil {
 		return nil, "", xerrors.Errorf("failed to create temporary directory: %w", err)
