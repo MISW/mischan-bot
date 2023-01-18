@@ -24,7 +24,7 @@ COPY . /mischan-bot
 WORKDIR /mischan-bot
 
 RUN go mod download \
-  && GO111MODULE=on go build -buildmode pie -o /mischan-bot/mischan-bot
+  && go build -buildmode pie -o /mischan-bot/mischan-bot
 
 # production
 FROM gcr.io/distroless/base:debug AS production
