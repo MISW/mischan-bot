@@ -7,7 +7,7 @@ require (
 	github.com/go-git/go-git/v5 v5.5.2
 	github.com/google/go-github/v50 v50.0.0
 	github.com/heetch/confita v0.10.0
-	github.com/labstack/echo/v4 v4.10.0
+	github.com/labstack/echo/v4 v4.10.2
 	go.uber.org/dig v1.16.1
 	golang.org/x/xerrors v0.0.0-20220907171357-04be3eba64a2
 )
