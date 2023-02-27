@@ -1,46 +1,43 @@
 package config
 
 import (
-	"context"
+	"fmt"
 
-	"github.com/heetch/confita"
-	"github.com/heetch/confita/backend/env"
-	"github.com/heetch/confita/backend/file"
+	"github.com/caarlos0/env/v7"
 	"golang.org/x/xerrors"
 )
 
 // PrivateKey represents a private key
 type PrivateKey struct {
-	Path string `config:"private_key_path" json:"path" yaml:"path"`
-	Raw  string `config:"private_key" json:"raw" yaml:"raw"`
+	Path string `env:"PRIVATE_KEY_PATH"`
+	Raw  string `env:"PRIVATE_KEY"`
 }
 
 // Config represents a config to load from file
 type Config struct {
-	WebhookSecret string     `config:"webhook_secret" json:"webhook_secret" yaml:"webhook_secret"`
-	PrivateKey    PrivateKey `json:"private_key" yaml:"private_key"`
-	AppID         int64      `config:"app_id" json:"app_id" yaml:"app_id"`
-	ManifestRepo  string     `config:"manifest_repo" json:"manifest_repo" yaml:"manifest_repo"`
-	Port          int        `config:"port" json:"port" yaml:"port"`
+	WebhookSecret string `env:"WEBHOOK_SECRET"`
+	AppID         int64  `env:"APP_ID"`
+	ManifestRepo  string `env:"MANIFEST_REPO"`
+	Port          int    `env:"PORT"`
+
+	PrivateKey PrivateKey
 }
 
 // ReadConfig reads config from env, json and yaml
 func ReadConfig() (*Config, error) {
-	loader := confita.NewLoader(
-		env.NewBackend(),
-		file.NewOptionalBackend("./mischan.json"),
-		file.NewOptionalBackend("./mischan.yaml"),
-		file.NewOptionalBackend("/etc/mischan/mischan.json"),
-		file.NewOptionalBackend("/etc/mischan/mischan.yaml"),
-	)
+	var cfg Config
 
-	cfg := &Config{}
-
-	err := loader.Load(context.Background(), cfg)
-
+	err := env.Parse(&cfg)
 	if err != nil {
-		return nil, xerrors.Errorf("failed to load config: %w", err)
+		return nil, xerrors.Errorf("failed to perse config: %w", err)
 	}
 
-	return cfg, nil
+	err = env.Parse(&cfg.PrivateKey)
+	if err != nil {
+		return nil, xerrors.Errorf("failed to perse config: %w", err)
+	}
+
+	fmt.Println(cfg)
+
+	return &cfg, err
 }
