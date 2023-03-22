@@ -3,7 +3,7 @@ ARG go_version=1.20
 # development
 FROM golang:${go_version} AS development
 
-ARG kustomize_version=v5.0.0
+ARG kustomize_version=v5.0.1
 RUN go install sigs.k8s.io/kustomize/kustomize/v5@${kustomize_version}
 
 COPY . /mischan-bot
@@ -16,7 +16,7 @@ CMD go mod download \
 # workspace
 FROM golang:${go_version} AS workspace
 
-ARG kustomize_version=v5.0.0
+ARG kustomize_version=v5.0.1
 RUN go install sigs.k8s.io/kustomize/kustomize/v5@${kustomize_version}
 
 COPY . /mischan-bot
