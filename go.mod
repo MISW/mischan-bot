@@ -8,7 +8,7 @@ require (
 	github.com/go-git/go-git/v5 v5.6.1
 	github.com/google/go-github/v51 v51.0.0
 	github.com/labstack/echo/v4 v4.10.2
-	go.uber.org/dig v1.16.1
+	go.uber.org/dig v1.17.0
 	golang.org/x/xerrors v0.0.0-20220907171357-04be3eba64a2
 )
 
