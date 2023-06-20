@@ -3,7 +3,7 @@ ARG go_version=1.20
 # development
 FROM golang:${go_version} AS development
 
-ARG kustomize_version=v5.0.1
+ARG kustomize_version=v5.1.0
 RUN go install sigs.k8s.io/kustomize/kustomize/v5@${kustomize_version}
 
 COPY . /mischan-bot
@@ -11,12 +11,12 @@ COPY . /mischan-bot
 WORKDIR /mischan-bot
 
 CMD go mod download \
-  && GO111MODULE=on go run main.go
+  && CGO_ENABLED=0 go run main.go
 
 # workspace
 FROM golang:${go_version} AS workspace
 
-ARG kustomize_version=v5.0.1
+ARG kustomize_version=v5.1.0
 RUN go install sigs.k8s.io/kustomize/kustomize/v5@${kustomize_version}
 
 COPY . /mischan-bot
@@ -24,7 +24,7 @@ COPY . /mischan-bot
 WORKDIR /mischan-bot
 
 RUN go mod download \
-  && go build -buildmode pie -o /mischan-bot/mischan-bot
+  && CGO_ENABLED=0 go build -buildmode pie -o /mischan-bot/mischan-bot
 
 # production
 FROM gcr.io/distroless/base:debug AS production

@@ -15,7 +15,7 @@ import (
 	"github.com/go-git/go-git/v5/config"
 	"github.com/go-git/go-git/v5/plumbing"
 	"github.com/go-git/go-git/v5/plumbing/object"
-	"github.com/google/go-github/v52/github"
+	"github.com/google/go-github/v53/github"
 	"golang.org/x/xerrors"
 )
 
