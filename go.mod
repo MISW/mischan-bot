@@ -7,7 +7,7 @@ require (
 	github.com/caarlos0/env/v8 v8.0.0
 	github.com/go-git/go-git/v5 v5.7.0
 	github.com/google/go-github/v53 v53.2.0
-	github.com/labstack/echo/v4 v4.10.2
+	github.com/labstack/echo/v4 v4.11.0
 	go.uber.org/dig v1.17.0
 	golang.org/x/xerrors v0.0.0-20220907171357-04be3eba64a2
 )
@@ -37,12 +37,12 @@ require (
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
 	github.com/valyala/fasttemplate v1.2.2 // indirect
 	github.com/xanzy/ssh-agent v0.3.3 // indirect
-	golang.org/x/crypto v0.10.0 // indirect
+	golang.org/x/crypto v0.11.0 // indirect
 	golang.org/x/mod v0.11.0 // indirect
-	golang.org/x/net v0.11.0 // indirect
+	golang.org/x/net v0.12.0 // indirect
 	golang.org/x/oauth2 v0.9.0 // indirect
-	golang.org/x/sys v0.9.0 // indirect
-	golang.org/x/text v0.10.0 // indirect
+	golang.org/x/sys v0.10.0 // indirect
+	golang.org/x/text v0.11.0 // indirect
 	golang.org/x/time v0.3.0 // indirect
 	golang.org/x/tools v0.10.0 // indirect
 	google.golang.org/appengine v1.6.7 // indirect
