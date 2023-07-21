@@ -5,7 +5,7 @@ go 1.20
 require (
 	github.com/bradleyfalzon/ghinstallation/v2 v2.6.0
 	github.com/caarlos0/env/v9 v9.0.0
-	github.com/go-git/go-git/v5 v5.7.0
+	github.com/go-git/go-git/v5 v5.8.0
 	github.com/google/go-github/v53 v53.2.0
 	github.com/labstack/echo/v4 v4.11.1
 	go.uber.org/dig v1.17.0
