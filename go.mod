@@ -5,7 +5,7 @@ go 1.20
 require (
 	github.com/bradleyfalzon/ghinstallation/v2 v2.6.0
 	github.com/caarlos0/env/v9 v9.0.0
-	github.com/go-git/go-git/v5 v5.8.0
+	github.com/go-git/go-git/v5 v5.8.1
 	github.com/google/go-github/v53 v53.2.0
 	github.com/labstack/echo/v4 v4.11.1
 	go.uber.org/dig v1.17.0
@@ -13,8 +13,9 @@ require (
 )
 
 require (
+	dario.cat/mergo v1.0.0 // indirect
 	github.com/Microsoft/go-winio v0.6.1 // indirect
-	github.com/ProtonMail/go-crypto v0.0.0-20230710112148-e01326fd72eb // indirect
+	github.com/ProtonMail/go-crypto v0.0.0-20230717121422-5aa5874ade95 // indirect
 	github.com/acomagu/bufpipe v1.0.4 // indirect
 	github.com/cloudflare/circl v1.3.3 // indirect
 	github.com/emirpasic/gods v1.18.1 // indirect
