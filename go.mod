@@ -3,7 +3,7 @@ module github.com/MISW/mischan-bot
 go 1.21
 
 require (
-	github.com/bradleyfalzon/ghinstallation/v2 v2.7.0
+	github.com/bradleyfalzon/ghinstallation/v2 v2.8.0
 	github.com/caarlos0/env/v9 v9.0.0
 	github.com/go-git/go-git/v5 v5.9.0
 	github.com/google/go-github/v55 v55.0.0
