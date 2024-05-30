@@ -3,7 +3,7 @@ module github.com/MISW/mischan-bot
 go 1.21
 
 require (
-	github.com/bradleyfalzon/ghinstallation/v2 v2.10.0
+	github.com/bradleyfalzon/ghinstallation/v2 v2.11.0
 	github.com/caarlos0/env/v10 v10.0.0
 	github.com/caarlos0/env/v9 v9.0.0
 	github.com/go-git/go-git/v5 v5.12.0
@@ -29,6 +29,7 @@ require (
 	github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da // indirect
 	github.com/google/go-github/v57 v57.0.0 // indirect
 	github.com/google/go-github/v60 v60.0.0 // indirect
+	github.com/google/go-github/v62 v62.0.0 // indirect
 	github.com/google/go-querystring v1.1.0 // indirect
 	github.com/jbenet/go-context v0.0.0-20150711004518-d14ea06fba99 // indirect
 	github.com/kevinburke/ssh_config v1.2.0 // indirect
