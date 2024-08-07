@@ -11,7 +11,7 @@ require (
 	github.com/google/go-github/v56 v56.0.0
 	github.com/labstack/echo/v4 v4.12.0
 	go.uber.org/dig v1.18.0
-	golang.org/x/xerrors v0.0.0-20231012003039-104605ab7028
+	golang.org/x/xerrors v0.0.0-20240716161551-93cc26a95ae9
 )
 
 require (
