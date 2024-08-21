@@ -8,7 +8,7 @@ require (
 	github.com/caarlos0/env/v9 v9.0.0
 	github.com/go-git/go-git/v5 v5.12.0
 	github.com/google/go-github/v55 v55.0.0
-	github.com/google/go-github/v56 v56.0.0
+	github.com/google/go-github/v64 v64.0.0
 	github.com/labstack/echo/v4 v4.12.0
 	go.uber.org/dig v1.18.0
 	golang.org/x/xerrors v0.0.0-20231012003039-104605ab7028
