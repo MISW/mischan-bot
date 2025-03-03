@@ -10,7 +10,7 @@ require (
 	github.com/google/go-github/v55 v55.0.0
 	github.com/google/go-github/v68 v68.0.0
 	github.com/labstack/echo/v4 v4.13.3
-	go.uber.org/dig v1.18.0
+	go.uber.org/dig v1.18.1
 	golang.org/x/xerrors v0.0.0-20240903120638-7835f813f4da
 )
 
