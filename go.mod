@@ -1,6 +1,8 @@
 module github.com/MISW/mischan-bot
 
-go 1.21
+go 1.22.0
+
+toolchain go1.24.1
 
 require (
 	github.com/bradleyfalzon/ghinstallation/v2 v2.13.0
@@ -9,6 +11,7 @@ require (
 	github.com/go-git/go-git/v5 v5.13.2
 	github.com/google/go-github/v55 v55.0.0
 	github.com/google/go-github/v68 v68.0.0
+	github.com/google/go-github/v69 v69.2.0
 	github.com/labstack/echo/v4 v4.13.3
 	go.uber.org/dig v1.18.1
 	golang.org/x/xerrors v0.0.0-20240903120638-7835f813f4da
