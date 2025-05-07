@@ -1,6 +1,8 @@
 module github.com/MISW/mischan-bot
 
-go 1.21
+go 1.23.0
+
+toolchain go1.24.3
 
 require (
 	github.com/bradleyfalzon/ghinstallation/v2 v2.13.0
@@ -8,7 +10,7 @@ require (
 	github.com/caarlos0/env/v9 v9.0.0
 	github.com/go-git/go-git/v5 v5.13.2
 	github.com/google/go-github/v55 v55.0.0
-	github.com/google/go-github/v68 v68.0.0
+	github.com/google/go-github/v71 v71.0.0
 	github.com/labstack/echo/v4 v4.13.3
 	go.uber.org/dig v1.18.1
 	golang.org/x/xerrors v0.0.0-20240903120638-7835f813f4da
@@ -31,6 +33,7 @@ require (
 	github.com/google/go-github/v60 v60.0.0 // indirect
 	github.com/google/go-github/v62 v62.0.0 // indirect
 	github.com/google/go-github/v66 v66.0.0 // indirect
+	github.com/google/go-github/v68 v68.0.0 // indirect
 	github.com/google/go-querystring v1.1.0 // indirect
 	github.com/jbenet/go-context v0.0.0-20150711004518-d14ea06fba99 // indirect
 	github.com/kevinburke/ssh_config v1.2.0 // indirect
