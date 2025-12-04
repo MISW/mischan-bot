@@ -9,6 +9,7 @@ require (
 	github.com/go-git/go-git/v5 v5.16.4
 	github.com/google/go-github/v55 v55.0.0
 	github.com/google/go-github/v79 v79.0.0
+	github.com/google/go-github/v80 v80.0.0
 	github.com/labstack/echo/v4 v4.13.4
 	go.uber.org/dig v1.19.0
 	golang.org/x/xerrors v0.0.0-20240903120638-7835f813f4da
