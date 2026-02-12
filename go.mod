@@ -5,7 +5,7 @@ go 1.24.0
 require (
 	github.com/bradleyfalzon/ghinstallation/v2 v2.17.0
 	github.com/caarlos0/env/v11 v11.3.1
-	github.com/caarlos0/env/v9 v9.0.0
+	github.com/caarlos0/env/v11 v11.3.1
 	github.com/go-git/go-git/v5 v5.16.5
 	github.com/google/go-github/v55 v55.0.0
 	github.com/google/go-github/v79 v79.0.0
